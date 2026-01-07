@@ -1,0 +1,19 @@
+{
+    "name": "incongo/projectgest",
+    "description": "Gestor de Proyectos",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/",
+            "Core\\": "core/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Incongo"
+        }
+    ],
+    "require": {
+        "illuminate/database": "^12.44"
+    }
+}
