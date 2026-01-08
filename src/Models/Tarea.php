@@ -12,11 +12,12 @@ class Tarea extends Model
     protected $fillable = [
         'titulo',
         'descripcion',
-        'usuario_id',
         'comentario',
+        'usuario_id',
         'estado_id',
-        'proyecto_id',
+        'proyecto_id'
     ];
+
 
     // Una tarea pertenece a un usuario
     public function usuario()

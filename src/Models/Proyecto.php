@@ -12,11 +12,12 @@ class Proyecto extends Model
     protected $fillable = [
         'titulo',
         'descripcion',
-        'tareas',
         'fecha_inicio',
         'fecha_fin',
         'usuario_id',
+        'estado_id'
     ];
+
 
     // Un proyecto pertenece a un usuario
     public function usuario()
@@ -28,5 +29,9 @@ class Proyecto extends Model
     public function tareas()
     {
         return $this->hasMany(Tarea::class, 'proyecto_id', 'proyecto_id');
+    }
+    public function estado()
+    {
+        return $this->belongsTo(Estado::class, 'estado_id', 'estado_id');
     }
 }

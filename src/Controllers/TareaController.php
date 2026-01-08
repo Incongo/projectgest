@@ -32,11 +32,16 @@ class TareaController extends Controller
         $proyectos = Proyecto::where('usuario_id', $usuarioId)->get();
         $estados = Estado::all();
 
+        // Detectar si viene desde proyecto/ver/{id}
+        $proyectoId = $_GET['proyecto'] ?? null;
+
         $this->view('tarea/nueva', [
             'proyectos' => $proyectos,
-            'estados' => $estados
+            'estados' => $estados,
+            'proyectoId' => $proyectoId
         ]);
     }
+
 
     public function guardar(): void
     {
@@ -72,7 +77,27 @@ class TareaController extends Controller
             'proyecto_id' => $_POST['proyecto_id']
         ]);
 
-        $this->redirect(BASE_URL . 'tarea');
+        $this->redirect(BASE_URL . 'proyecto/ver/' . $_POST['proyecto_id']);
+    }
+
+    public function ver(int $id): void
+    {
+        $tarea = Tarea::with(['estado', 'proyecto'])->find($id);
+
+        if (!$tarea) {
+            die('Tarea no encontrada');
+        }
+
+        // Comprobación de permisos
+        $usuarioId = $_SESSION['user_id'];
+
+        if ($tarea->usuario_id !== $usuarioId) {
+            die('No tienes permiso para ver esta tarea');
+        }
+
+        $this->view('tarea/ver', [
+            'tarea' => $tarea
+        ]);
     }
 
     public function editar(int $id): void

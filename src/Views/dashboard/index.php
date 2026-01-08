@@ -1,48 +1,45 @@
 <?php require_once __DIR__ . '/../layout/header.php'; ?>
 
-<div class="row">
-    <div class="col-12 mb-4">
-        <h2 class="fw-bold">Bienvenido, <?= htmlspecialchars($usuario->nombre) ?> 👋</h2>
-        <p class="text-muted">Aquí puedes gestionar tus proyectos y tareas.</p>
-    </div>
-</div>
+<div class="container py-5 fade-in">
 
-<div class="row g-4">
+    <h1 class="fw-bold mb-4">Panel de Control</h1>
+    <p class="text-light mb-5">Accede rápidamente a tus herramientas principales.</p>
 
-    <!-- Tarjeta Proyectos -->
-    <div class="col-md-6">
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <h4 class="card-title">Proyectos</h4>
-                <p class="card-text text-muted">Gestiona tus proyectos activos.</p>
+    <div class="row g-4">
 
-                <a href="<?= BASE_URL ?>proyecto" class="btn btn-primary">
-                    Ver Proyectos
-                </a>
-
-                <a href="<?= BASE_URL ?>proyecto/nuevo" class="btn btn-success">
-                    Nuevo Proyecto
-                </a>
+        <div class="col-md-4">
+            <div class="card text-dark shadow-sm h-100 border-0 card-hover">
+                <div class="card-body text-center">
+                    <i class="bi bi-kanban fs-1 text-primary"></i>
+                    <h4 class="fw-bold mt-3">Proyectos</h4>
+                    <p>Gestiona tus proyectos activos.</p>
+                    <a href="<?= BASE_URL ?>proyecto" class="btn btn-primary w-100">Ir a Proyectos</a>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Tarjeta Tareas -->
-    <div class="col-md-6">
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <h4 class="card-title">Tareas</h4>
-                <p class="card-text text-muted">Organiza tus tareas pendientes.</p>
-
-                <a href="<?= BASE_URL ?>tarea" class="btn btn-primary">
-                    Ver Tareas
-                </a>
-
-                <a href="<?= BASE_URL ?>tarea/nueva" class="btn btn-success">
-                    Nueva Tarea
-                </a>
+        <div class="col-md-4">
+            <div class="card text-dark shadow-sm h-100 border-0 card-hover">
+                <div class="card-body text-center">
+                    <i class="bi bi-check2-square fs-1 text-success"></i>
+                    <h4 class="fw-bold mt-3">Tareas</h4>
+                    <p>Revisa y organiza tus tareas.</p>
+                    <a href="<?= BASE_URL ?>tarea" class="btn btn-success w-100">Ir a Tareas</a>
+                </div>
             </div>
         </div>
+
+        <div class="col-md-4">
+            <div class="card text-dark shadow-sm h-100 border-0 card-hover">
+                <div class="card-body text-center">
+                    <i class="bi bi-flag fs-1 text-danger"></i>
+                    <h4 class="fw-bold mt-3">Estados</h4>
+                    <p>Configura tus estados personalizados.</p>
+                    <a href="<?= BASE_URL ?>estado" class="btn btn-danger w-100">Ir a Estados</a>
+                </div>
+            </div>
+        </div>
+
     </div>
 
 </div>

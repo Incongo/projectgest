@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use Core\Controller;
 use App\Models\Proyecto;
+use App\Models\Estado;
 
 class ProyectoController extends Controller
 {
@@ -13,7 +14,9 @@ class ProyectoController extends Controller
     {
         $usuarioId = $_SESSION['user_id'] ?? null;
 
-        $proyectos = Proyecto::where('usuario_id', $usuarioId)->get();
+        $proyectos = Proyecto::where('usuario_id', $usuarioId)
+            ->with('estado') // ← Añadido para mostrar estado en index
+            ->get();
 
         $this->view('proyecto/index', [
             'titulo' => 'Mis Proyectos',
@@ -23,8 +26,11 @@ class ProyectoController extends Controller
 
     public function nuevo(): void
     {
+        $estados = Estado::all(); // ← Cargar estados globales
+
         $this->view('proyecto/nuevo', [
-            'titulo' => 'Nuevo Proyecto'
+            'titulo' => 'Nuevo Proyecto',
+            'estados' => $estados
         ]);
     }
 
@@ -36,9 +42,14 @@ class ProyectoController extends Controller
             $errores[] = 'El título es obligatorio.';
         }
 
+        if (empty($_POST['estado_id'])) {
+            $errores[] = 'Debes seleccionar un estado.';
+        }
+
         if (!empty($errores)) {
             $this->view('proyecto/nuevo', [
-                'errores' => $errores
+                'errores' => $errores,
+                'estados' => Estado::all() // ← Volver a cargar estados
             ]);
             return;
         }
@@ -46,10 +57,10 @@ class ProyectoController extends Controller
         Proyecto::create([
             'titulo' => $_POST['titulo'],
             'descripcion' => $_POST['descripcion'] ?? null,
-            'tareas' => $_POST['tareas'] ?? null,
             'fecha_inicio' => $_POST['fecha_inicio'] ?? null,
             'fecha_fin' => $_POST['fecha_fin'] ?? null,
-            'usuario_id' => $_SESSION['user_id']
+            'usuario_id' => $_SESSION['user_id'],
+            'estado_id' => $_POST['estado_id'] // ← Guardar estado
         ]);
 
         $this->redirect(BASE_URL . 'proyecto');
@@ -63,18 +74,22 @@ class ProyectoController extends Controller
             die('Proyecto no encontrado');
         }
 
-        // Si es GET → mostrar formulario
+        $estados = Estado::all(); // ← Cargar estados globales
+
+        // GET → mostrar formulario
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $this->view('proyecto/editar', [
-                'proyecto' => $proyecto
+                'proyecto' => $proyecto,
+                'estados' => $estados
             ]);
             return;
         }
 
-        // Si es POST → procesar actualización
+        // POST → procesar actualización
         if (empty($_POST['titulo'])) {
             $this->view('proyecto/editar', [
                 'proyecto' => $proyecto,
+                'estados' => $estados,
                 'error' => 'El título es obligatorio.'
             ]);
             return;
@@ -83,9 +98,9 @@ class ProyectoController extends Controller
         $proyecto->update([
             'titulo' => $_POST['titulo'],
             'descripcion' => $_POST['descripcion'] ?? null,
-            'tareas' => $_POST['tareas'] ?? null,
             'fecha_inicio' => $_POST['fecha_inicio'] ?? null,
             'fecha_fin' => $_POST['fecha_fin'] ?? null,
+            'estado_id' => $_POST['estado_id'] // ← Actualizar estado
         ]);
 
         $this->redirect(BASE_URL . 'proyecto');
@@ -100,5 +115,25 @@ class ProyectoController extends Controller
         }
 
         $this->redirect(BASE_URL . 'proyecto');
+    }
+    public function ver(int $id): void
+    {
+        $proyecto = Proyecto::with(['estado', 'tareas', 'tareas.estado'])->find($id);
+
+
+        if (!$proyecto) {
+            die('Proyecto no encontrado');
+        }
+
+        // Comprobación de permisos: solo el dueño del proyecto puede verlo
+        $usuarioId = $_SESSION['user_id'];
+
+        if ($proyecto->usuario_id !== $usuarioId) {
+            die('No tienes permiso para ver este proyecto');
+        }
+
+        $this->view('proyecto/ver', [
+            'proyecto' => $proyecto
+        ]);
     }
 }
