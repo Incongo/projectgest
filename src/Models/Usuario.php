@@ -15,13 +15,11 @@ class Usuario extends Model
         'password',
     ];
 
-    // Un usuario tiene muchos proyectos
     public function proyectos()
     {
         return $this->hasMany(Proyecto::class, 'usuario_id', 'usuario_id');
     }
 
-    // Un usuario tiene muchas tareas
     public function tareas()
     {
         return $this->hasMany(Tarea::class, 'usuario_id', 'usuario_id');

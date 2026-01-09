@@ -13,25 +13,32 @@ class Tarea extends Model
         'titulo',
         'descripcion',
         'comentario',
-        'usuario_id',
+        'usuario_id',   // asignado
+        'creador_id',   // NUEVO: creador de la tarea
         'estado_id',
         'proyecto_id'
     ];
 
-
-    // Una tarea pertenece a un usuario
-    public function usuario()
+    // Usuario asignado
+    public function asignado()
     {
         return $this->belongsTo(Usuario::class, 'usuario_id', 'usuario_id');
     }
 
-    // Una tarea pertenece a un estado
+
+    // Creador de la tarea
+    public function creador()
+    {
+        return $this->belongsTo(Usuario::class, 'creador_id', 'usuario_id');
+    }
+
+    // Estado
     public function estado()
     {
         return $this->belongsTo(Estado::class, 'estado_id', 'estado_id');
     }
 
-    // Una tarea pertenece a un proyecto
+    // Proyecto
     public function proyecto()
     {
         return $this->belongsTo(Proyecto::class, 'proyecto_id', 'proyecto_id');

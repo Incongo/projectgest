@@ -1,47 +1,119 @@
 <?php require_once __DIR__ . '/../layout/header.php'; ?>
 
-<div class="container py-5 fade-in">
+<div class="ui segment">
 
-    <h1 class="fw-bold mb-4">Panel de Control</h1>
-    <p class="text-light mb-5">Accede rápidamente a tus herramientas principales.</p>
+    <h1 class="ui header">Panel general</h1>
+    <p class="ui small text">Aquí ves todos los proyectos en los que participas.</p>
 
-    <div class="row g-4">
+    <?php if ($proyectos->isEmpty()): ?>
+        <div class="ui message">
+            No participas en ningún proyecto.
+        </div>
+    <?php else: ?>
 
-        <div class="col-md-4">
-            <div class="card text-dark shadow-sm h-100 border-0 card-hover">
-                <div class="card-body text-center">
-                    <i class="bi bi-kanban fs-1 text-primary"></i>
-                    <h4 class="fw-bold mt-3">Proyectos</h4>
-                    <p>Gestiona tus proyectos activos.</p>
-                    <a href="<?= BASE_URL ?>proyecto" class="btn btn-primary w-100">Ir a Proyectos</a>
+        <div class="ui styled fluid accordion">
+
+            <?php foreach ($proyectos as $p): ?>
+                <div class="title">
+                    <i class="dropdown icon"></i>
+                    <?= htmlspecialchars($p->titulo) ?>
+                    <span class="ui label"><?= htmlspecialchars($p->estado->nombre) ?></span>
                 </div>
-            </div>
+
+                <div class="content">
+
+                    <!-- DESCRIPCIÓN -->
+                    <?php if ($p->descripcion): ?>
+                        <p><?= nl2br(htmlspecialchars($p->descripcion)) ?></p>
+                    <?php endif; ?>
+
+                    <!-- BOTONES -->
+                    <a href="<?= BASE_URL ?>proyecto/ver/<?= $p->proyecto_id ?>" class="ui blue button small">
+                        Ver proyecto
+                    </a>
+
+                    <?php if ($p->usuario_id === $usuarioId): ?>
+                        <a href="<?= BASE_URL ?>proyecto/editar/<?= $p->proyecto_id ?>" class="ui button small">
+                            Editar
+                        </a>
+                    <?php endif; ?>
+
+                    <div class="ui divider"></div>
+
+                    <!-- TAREAS EN CASCADA -->
+                    <h4 class="ui header">Tareas</h4>
+
+                    <?php if ($p->tareas->isEmpty()): ?>
+                        <div class="ui message">Este proyecto no tiene tareas.</div>
+                    <?php else: ?>
+
+                        <div class="ui relaxed divided list">
+
+                            <?php foreach ($p->tareas as $t): ?>
+                                <div class="item">
+
+                                    <i class="large tasks middle aligned icon"></i>
+
+                                    <div class="content">
+
+                                        <div class="header">
+                                            <?= htmlspecialchars($t->titulo) ?>
+                                            <span class="ui mini label"><?= htmlspecialchars($t->estado->nombre) ?></span>
+                                        </div>
+
+                                        <div class="description">
+                                            <?= nl2br(htmlspecialchars($t->descripcion)) ?>
+                                        </div>
+
+                                        <div class="ui small horizontal list" style="margin-top:0.5rem;">
+                                            <div class="item">
+                                                <strong>Asignada a:</strong>
+                                                <?= htmlspecialchars($t->asignado->nombre) ?>
+                                            </div>
+                                        </div>
+
+                                        <div style="margin-top:0.5rem;">
+                                            <a href="<?= BASE_URL ?>tarea/ver/<?= $t->tarea_id ?>" class="ui blue button tiny">
+                                                Ver
+                                            </a>
+
+                                            <?php if ($p->usuario_id === $usuarioId): ?>
+                                                <button class="ui button tiny" onclick="editarTarea(<?= $t->tarea_id ?>, '<?= htmlspecialchars($t->titulo) ?>', '<?= htmlspecialchars($t->descripcion) ?>', <?= $t->usuario_id ?>)">
+                                                    Editar
+                                                </button>
+
+                                                <a href="<?= BASE_URL ?>proyecto/borrarTarea/<?= $t->tarea_id ?>"
+                                                    class="ui red button tiny"
+                                                    onclick="return confirm('¿Seguro que deseas borrar esta tarea?')">
+                                                    Borrar
+                                                </a>
+                                            <?php endif; ?>
+
+                                            <button class="ui teal button tiny" onclick="cambiarEstado(<?= $t->tarea_id ?>)">
+                                                Estado
+                                            </button>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            <?php endforeach; ?>
+
+                        </div>
+
+                    <?php endif; ?>
+
+                </div>
+            <?php endforeach; ?>
+
         </div>
 
-        <div class="col-md-4">
-            <div class="card text-dark shadow-sm h-100 border-0 card-hover">
-                <div class="card-body text-center">
-                    <i class="bi bi-check2-square fs-1 text-success"></i>
-                    <h4 class="fw-bold mt-3">Tareas</h4>
-                    <p>Revisa y organiza tus tareas.</p>
-                    <a href="<?= BASE_URL ?>tarea" class="btn btn-success w-100">Ir a Tareas</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card text-dark shadow-sm h-100 border-0 card-hover">
-                <div class="card-body text-center">
-                    <i class="bi bi-flag fs-1 text-danger"></i>
-                    <h4 class="fw-bold mt-3">Estados</h4>
-                    <p>Configura tus estados personalizados.</p>
-                    <a href="<?= BASE_URL ?>estado" class="btn btn-danger w-100">Ir a Estados</a>
-                </div>
-            </div>
-        </div>
-
-    </div>
+    <?php endif; ?>
 
 </div>
+
+<script>
+    $('.ui.accordion').accordion();
+</script>
 
 <?php require_once __DIR__ . '/../layout/footer.php'; ?>

@@ -1,45 +1,35 @@
-</div> <!-- container -->
+    </div> <!-- cierre ui container -->
 
-<!-- Footer -->
-<footer class="bg-dark text-light mt-5 py-4">
-    <div class="container">
+    <!-- FOOTER Semantic UI -->
+    <div class="ui inverted vertical segment" style="padding: 3rem 0; margin-top: 4rem;">
+        <div class="ui container">
 
-        <div class="row align-items-center">
+            <div class="ui stackable grid">
 
-            <!-- Nombre de la app -->
-            <div class="col-md-4 text-center text-md-start mb-3 mb-md-0">
-                <h5 class="fw-bold mb-0">ProjectGest</h5>
-                <small class="text-muted">Organiza. Planifica. Avanza.</small>
-            </div>
+                <div class="six wide column">
+                    <h4 class="ui inverted header">ProjectGest</h4>
+                    <p>Organiza. Planifica. Avanza.</p>
+                </div>
 
-            <!-- Enlaces -->
-            <div class="col-md-4 text-center mb-3 mb-md-0">
-                <a href="<?= BASE_URL ?>" class="text-light text-decoration-none me-3">
-                    <i class="bi bi-house-door-fill"></i> Inicio
-                </a>
-                <a href="<?= BASE_URL ?>auth/login" class="text-light text-decoration-none me-3">
-                    <i class="bi bi-box-arrow-in-right"></i> Login
-                </a>
-                <a href="<?= BASE_URL ?>auth/register" class="text-light text-decoration-none">
-                    <i class="bi bi-person-plus-fill"></i> Registro
-                </a>
-            </div>
+                <div class="five wide column">
+                    <h4 class="ui inverted header">Navegación</h4>
+                    <div class="ui inverted link list">
+                        <a href="<?= BASE_URL ?>" class="item">Inicio</a>
+                        <a href="<?= BASE_URL ?>auth/login" class="item">Login</a>
+                        <a href="<?= BASE_URL ?>auth/register" class="item">Registro</a>
+                    </div>
+                </div>
 
-            <!-- Redes o derechos -->
-            <div class="col-md-4 text-center text-md-end">
-                <small class="text-muted">
-                    © <?= date('Y') ?> ProjectGest. Todos los derechos reservados.
-                </small>
+                <div class="five wide column">
+                    <h4 class="ui inverted header">© <?= date('Y') ?></h4>
+                    <p>Todos los derechos reservados.</p>
+                </div>
+
             </div>
 
         </div>
-
     </div>
-</footer>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
 
-</body>
-
-</html>
+    </html>

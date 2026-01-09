@@ -14,24 +14,36 @@ class Proyecto extends Model
         'descripcion',
         'fecha_inicio',
         'fecha_fin',
-        'usuario_id',
+        'usuario_id',   // creador
         'estado_id'
     ];
 
-
-    // Un proyecto pertenece a un usuario
-    public function usuario()
+    // Creador del proyecto
+    public function creador()
     {
         return $this->belongsTo(Usuario::class, 'usuario_id', 'usuario_id');
     }
 
-    // Un proyecto tiene muchas tareas
+    // Estado del proyecto
+    public function estado()
+    {
+        return $this->belongsTo(Estado::class, 'estado_id', 'estado_id');
+    }
+
+    // Tareas del proyecto
     public function tareas()
     {
         return $this->hasMany(Tarea::class, 'proyecto_id', 'proyecto_id');
     }
-    public function estado()
+
+    // Usuarios invitados
+    public function invitados()
     {
-        return $this->belongsTo(Estado::class, 'estado_id', 'estado_id');
+        return $this->belongsToMany(
+            Usuario::class,
+            'proyecto_usuario',
+            'proyecto_id',
+            'usuario_id'
+        );
     }
 }

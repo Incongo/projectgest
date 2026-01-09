@@ -6,119 +6,35 @@ namespace App\Controllers;
 
 use Core\Controller;
 use App\Models\Tarea;
-use App\Models\Proyecto;
-use App\Models\Estado;
 
 class TareaController extends Controller
 {
-    public function index(): void
-    {
-        $usuarioId = $_SESSION['user_id'];
-
-        $tareas = Tarea::where('usuario_id', $usuarioId)
-            ->with(['estado', 'proyecto'])
-            ->get();
-
-        $this->view('tarea/index', [
-            'titulo' => 'Mis Tareas',
-            'tareas' => $tareas
-        ]);
-    }
-
-    public function nueva(): void
-    {
-        $usuarioId = $_SESSION['user_id'];
-
-        $proyectos = Proyecto::where('usuario_id', $usuarioId)->get();
-        $estados = Estado::all();
-
-        // Detectar si viene desde proyecto/ver/{id}
-        $proyectoId = $_GET['proyecto'] ?? null;
-
-        $this->view('tarea/nueva', [
-            'proyectos' => $proyectos,
-            'estados' => $estados,
-            'proyectoId' => $proyectoId
-        ]);
-    }
-
-
-    public function guardar(): void
-    {
-        $errores = [];
-
-        if (empty($_POST['titulo'])) {
-            $errores[] = 'El título es obligatorio.';
-        }
-
-        if (empty($_POST['proyecto_id'])) {
-            $errores[] = 'Debes seleccionar un proyecto.';
-        }
-
-        if (empty($_POST['estado_id'])) {
-            $errores[] = 'Debes seleccionar un estado.';
-        }
-
-        if (!empty($errores)) {
-            $this->view('tarea/nueva', [
-                'errores' => $errores,
-                'proyectos' => Proyecto::where('usuario_id', $_SESSION['user_id'])->get(),
-                'estados' => Estado::all()
-            ]);
-            return;
-        }
-
-        Tarea::create([
-            'titulo' => $_POST['titulo'],
-            'descripcion' => $_POST['descripcion'] ?? null,
-            'comentario' => $_POST['comentario'] ?? null,
-            'usuario_id' => $_SESSION['user_id'],
-            'estado_id' => $_POST['estado_id'],
-            'proyecto_id' => $_POST['proyecto_id']
-        ]);
-
-        $this->redirect(BASE_URL . 'proyecto/ver/' . $_POST['proyecto_id']);
-    }
-
     public function ver(int $id): void
     {
-        $tarea = Tarea::with(['estado', 'proyecto'])->find($id);
+        $tarea = Tarea::with(['estado', 'proyecto', 'asignado'])->find($id);
+
 
         if (!$tarea) {
             die('Tarea no encontrada');
         }
 
-        // Comprobación de permisos
         $usuarioId = $_SESSION['user_id'];
 
-        if ($tarea->usuario_id !== $usuarioId) {
+        $esCreador = $tarea->proyecto->usuario_id === $usuarioId;
+        $esAsignado = $tarea->usuario_id === $usuarioId;
+
+        if (!$esCreador && !$esAsignado) {
             die('No tienes permiso para ver esta tarea');
         }
 
         $this->view('tarea/ver', [
-            'tarea' => $tarea
-        ]);
-    }
-
-    public function editar(int $id): void
-    {
-        $tarea = Tarea::find($id);
-
-        if (!$tarea) {
-            die('Tarea no encontrada');
-        }
-
-        $proyectos = Proyecto::where('usuario_id', $_SESSION['user_id'])->get();
-        $estados = Estado::all();
-
-        $this->view('tarea/editar', [
             'tarea' => $tarea,
-            'proyectos' => $proyectos,
-            'estados' => $estados
+            'esCreador' => $esCreador,
+            'esAsignado' => $esAsignado
         ]);
     }
 
-    public function actualizar(int $id): void
+    public function comentar(int $id): void
     {
         $tarea = Tarea::find($id);
 
@@ -126,35 +42,16 @@ class TareaController extends Controller
             die('Tarea no encontrada');
         }
 
-        if (empty($_POST['titulo'])) {
-            $this->view('tarea/editar', [
-                'tarea' => $tarea,
-                'error' => 'El título es obligatorio.',
-                'proyectos' => Proyecto::where('usuario_id', $_SESSION['user_id'])->get(),
-                'estados' => Estado::all()
-            ]);
-            return;
+        $usuarioId = $_SESSION['user_id'];
+
+        if ($tarea->usuario_id !== $usuarioId) {
+            die('No tienes permiso para comentar esta tarea');
         }
 
         $tarea->update([
-            'titulo' => $_POST['titulo'],
-            'descripcion' => $_POST['descripcion'] ?? null,
-            'comentario' => $_POST['comentario'] ?? null,
-            'estado_id' => $_POST['estado_id'],
-            'proyecto_id' => $_POST['proyecto_id']
+            'comentario' => $_POST['comentario'] ?? null
         ]);
 
-        $this->redirect(BASE_URL . 'tarea');
-    }
-
-    public function borrar(int $id): void
-    {
-        $tarea = Tarea::find($id);
-
-        if ($tarea) {
-            $tarea->delete();
-        }
-
-        $this->redirect(BASE_URL . 'tarea');
+        $this->redirect(BASE_URL . 'tarea/ver/' . $id);
     }
 }

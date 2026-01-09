@@ -7,15 +7,17 @@ namespace App\Controllers;
 use Core\Controller;
 use App\Models\Proyecto;
 use App\Models\Estado;
+use App\Models\Tarea;
+use App\Models\Usuario;
 
 class ProyectoController extends Controller
 {
     public function index(): void
     {
-        $usuarioId = $_SESSION['user_id'] ?? null;
+        $usuarioId = $_SESSION['user_id'];
 
         $proyectos = Proyecto::where('usuario_id', $usuarioId)
-            ->with('estado') // ← Añadido para mostrar estado en index
+            ->with('estado')
             ->get();
 
         $this->view('proyecto/index', [
@@ -26,30 +28,16 @@ class ProyectoController extends Controller
 
     public function nuevo(): void
     {
-        $estados = Estado::all(); // ← Cargar estados globales
-
         $this->view('proyecto/nuevo', [
-            'titulo' => 'Nuevo Proyecto',
-            'estados' => $estados
+            'titulo' => 'Nuevo Proyecto'
         ]);
     }
 
     public function guardar(): void
     {
-        $errores = [];
-
         if (empty($_POST['titulo'])) {
-            $errores[] = 'El título es obligatorio.';
-        }
-
-        if (empty($_POST['estado_id'])) {
-            $errores[] = 'Debes seleccionar un estado.';
-        }
-
-        if (!empty($errores)) {
             $this->view('proyecto/nuevo', [
-                'errores' => $errores,
-                'estados' => Estado::all() // ← Volver a cargar estados
+                'errores' => ['El título es obligatorio.']
             ]);
             return;
         }
@@ -60,7 +48,7 @@ class ProyectoController extends Controller
             'fecha_inicio' => $_POST['fecha_inicio'] ?? null,
             'fecha_fin' => $_POST['fecha_fin'] ?? null,
             'usuario_id' => $_SESSION['user_id'],
-            'estado_id' => $_POST['estado_id'] // ← Guardar estado
+            'estado_id' => 1
         ]);
 
         $this->redirect(BASE_URL . 'proyecto');
@@ -70,26 +58,17 @@ class ProyectoController extends Controller
     {
         $proyecto = Proyecto::find($id);
 
-        if (!$proyecto) {
-            die('Proyecto no encontrado');
-        }
+        if (!$proyecto) die('Proyecto no encontrado');
+        if ($proyecto->usuario_id !== $_SESSION['user_id']) die('No tienes permiso');
 
-        $estados = Estado::all(); // ← Cargar estados globales
-
-        // GET → mostrar formulario
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-            $this->view('proyecto/editar', [
-                'proyecto' => $proyecto,
-                'estados' => $estados
-            ]);
+            $this->view('proyecto/editar', ['proyecto' => $proyecto]);
             return;
         }
 
-        // POST → procesar actualización
         if (empty($_POST['titulo'])) {
             $this->view('proyecto/editar', [
                 'proyecto' => $proyecto,
-                'estados' => $estados,
                 'error' => 'El título es obligatorio.'
             ]);
             return;
@@ -99,8 +78,7 @@ class ProyectoController extends Controller
             'titulo' => $_POST['titulo'],
             'descripcion' => $_POST['descripcion'] ?? null,
             'fecha_inicio' => $_POST['fecha_inicio'] ?? null,
-            'fecha_fin' => $_POST['fecha_fin'] ?? null,
-            'estado_id' => $_POST['estado_id'] // ← Actualizar estado
+            'fecha_fin' => $_POST['fecha_fin'] ?? null
         ]);
 
         $this->redirect(BASE_URL . 'proyecto');
@@ -110,30 +88,125 @@ class ProyectoController extends Controller
     {
         $proyecto = Proyecto::find($id);
 
-        if ($proyecto) {
-            $proyecto->delete();
-        }
+        if (!$proyecto) die('Proyecto no encontrado');
+        if ($proyecto->usuario_id !== $_SESSION['user_id']) die('No tienes permiso');
+
+        $proyecto->delete();
 
         $this->redirect(BASE_URL . 'proyecto');
     }
+
     public function ver(int $id): void
     {
-        $proyecto = Proyecto::with(['estado', 'tareas', 'tareas.estado'])->find($id);
+        $proyecto = Proyecto::with([
+            'estado',
+            'creador',
+            'tareas',
+            'tareas.estado',
+            'tareas.asignado'
+        ])->find($id);
 
+        if (!$proyecto) die('Proyecto no encontrado');
 
-        if (!$proyecto) {
-            die('Proyecto no encontrado');
-        }
-
-        // Comprobación de permisos: solo el dueño del proyecto puede verlo
         $usuarioId = $_SESSION['user_id'];
 
-        if ($proyecto->usuario_id !== $usuarioId) {
+        $esCreador = $proyecto->usuario_id === $usuarioId;
+
+        $esAsignado = Tarea::where('proyecto_id', $proyecto->proyecto_id)
+            ->where('usuario_id', $usuarioId)
+            ->exists();
+
+        if (!$esCreador && !$esAsignado) {
             die('No tienes permiso para ver este proyecto');
         }
 
+        $usuarios = Usuario::all();
+
         $this->view('proyecto/ver', [
-            'proyecto' => $proyecto
+            'proyecto' => $proyecto,
+            'usuarios' => $usuarios,
+            'esCreador' => $esCreador
         ]);
+    }
+
+    /* ============================================================
+       ===============  GESTIÓN DE TAREAS (MODALES) ===============
+       ============================================================ */
+
+    public function guardarTarea(): void
+    {
+        if (empty($_POST['titulo'])) die('El título es obligatorio');
+
+        $proyecto = Proyecto::find($_POST['proyecto_id']);
+        if (!$proyecto) die('Proyecto no encontrado');
+
+        if ($proyecto->usuario_id !== $_SESSION['user_id']) {
+            die('No tienes permiso para añadir tareas');
+        }
+
+        Tarea::create([
+            'titulo' => $_POST['titulo'],
+            'descripcion' => $_POST['descripcion'] ?? null,
+            'comentario' => null,
+            'usuario_id' => $_POST['usuario_id'], // asignado
+            'estado_id' => 1,
+            'proyecto_id' => $proyecto->proyecto_id
+        ]);
+
+        $this->redirect(BASE_URL . 'proyecto/ver/' . $proyecto->proyecto_id);
+    }
+
+    public function actualizarTarea(int $id): void
+    {
+        $tarea = Tarea::with('proyecto')->find($id);
+        if (!$tarea) die('Tarea no encontrada');
+
+        if ($tarea->proyecto->usuario_id !== $_SESSION['user_id']) {
+            die('No tienes permiso para editar esta tarea');
+        }
+
+        $tarea->update([
+            'titulo' => $_POST['titulo'],
+            'descripcion' => $_POST['descripcion'] ?? null
+            // NO tocamos usuario_id
+        ]);
+
+        $this->redirect(BASE_URL . 'proyecto/ver/' . $tarea->proyecto_id);
+    }
+
+
+    public function borrarTarea(int $id): void
+    {
+        $tarea = Tarea::with('proyecto')->find($id);
+        if (!$tarea) die('Tarea no encontrada');
+
+        if ($tarea->proyecto->usuario_id !== $_SESSION['user_id']) {
+            die('No tienes permiso');
+        }
+
+        $proyectoId = $tarea->proyecto_id;
+
+        $tarea->delete();
+
+        $this->redirect(BASE_URL . 'proyecto/ver/' . $proyectoId);
+    }
+
+    public function cambiarEstadoTarea(int $id): void
+    {
+        $tarea = Tarea::with('proyecto')->find($id);
+        if (!$tarea) die('Tarea no encontrada');
+
+        $usuarioId = $_SESSION['user_id'];
+
+        $esCreador = $tarea->proyecto->usuario_id === $usuarioId;
+        $esAsignado = $tarea->usuario_id === $usuarioId;
+
+        if (!$esCreador && !$esAsignado) die('No tienes permiso');
+
+        $tarea->update([
+            'estado_id' => $_POST['estado_id']
+        ]);
+
+        $this->redirect(BASE_URL . 'proyecto/ver/' . $tarea->proyecto_id);
     }
 }
