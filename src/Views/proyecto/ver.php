@@ -1,5 +1,10 @@
 <?php require_once __DIR__ . '/../layout/header.php'; ?>
 
+<?php
+// Detectar si venimos desde el dashboard para editar una tarea
+$abrirEdicion = isset($_GET['editar']) ? intval($_GET['editar']) : null;
+?>
+
 <div class="ui segment">
 
     <?php $usuarioId = $_SESSION['user_id']; ?>
@@ -98,7 +103,6 @@
                             </div>
                             <div class="item">
                                 <strong>Asignada a:</strong> <?= htmlspecialchars($t->asignado->nombre ?? 'Sin asignar') ?>
-
                             </div>
                         </div>
                     </div>
@@ -107,9 +111,10 @@
                         <a href="<?= BASE_URL ?>tarea/ver/<?= $t->tarea_id ?>" class="ui blue button small">Ver</a>
 
                         <?php if ($esCreador): ?>
-                            <button class="ui button small" onclick="editarTarea(<?= $t->tarea_id ?>, '<?= htmlspecialchars($t->titulo) ?>', '<?= htmlspecialchars($t->descripcion) ?>', <?= $t->usuario_id ?>)">
+                            <a href="<?= BASE_URL ?>proyecto/ver/<?= $proyecto->proyecto_id ?>?editar=<?= $t->tarea_id ?>"
+                                class="ui button small">
                                 Editar
-                            </button>
+                            </a>
 
                             <a href="<?= BASE_URL ?>proyecto/borrarTarea/<?= $t->tarea_id ?>"
                                 class="ui red button small"
@@ -205,8 +210,8 @@
             </div>
 
             <div class="field">
-                <label>Asignar a</label>
-                <select name="usuario_id" id="editUsuario" class="ui dropdown">
+                <label>Asignada a</label>
+                <select name="usuario_id" id="editUsuario" class="ui dropdown" disabled>
                     <?php foreach ($usuarios as $u): ?>
                         <option value="<?= $u->usuario_id ?>"><?= htmlspecialchars($u->nombre) ?></option>
                     <?php endforeach; ?>
@@ -238,20 +243,25 @@
 </div>
 
 <script>
-    function editarTarea(id, titulo, descripcion, usuarioId) {
-        $('#editTitulo').val(titulo);
-        $('#editDescripcion').val(descripcion);
-        $('#editUsuario').val(usuarioId);
-
-        $('#formEditarTarea').attr('action', '<?= BASE_URL ?>proyecto/actualizarTarea/' + id);
-
-        $('#modalEditarTarea').modal('show');
-    }
-
     function cambiarEstado(id) {
         $('#formEstado').attr('action', '<?= BASE_URL ?>proyecto/cambiarEstadoTarea/' + id);
         $('#modalEstado').modal('show');
     }
+
+    <?php if ($abrirEdicion): ?>
+        <?php
+        $tareaEditar = $proyecto->tareas->firstWhere('tarea_id', $abrirEdicion);
+        if ($tareaEditar):
+        ?>
+            $('#editTitulo').val('<?= htmlspecialchars($tareaEditar->titulo) ?>');
+            $('#editDescripcion').val('<?= htmlspecialchars($tareaEditar->descripcion) ?>');
+            $('#editUsuario').val('<?= $tareaEditar->usuario_id ?>');
+
+            $('#formEditarTarea').attr('action', '<?= BASE_URL ?>proyecto/actualizarTarea/<?= $tareaEditar->tarea_id ?>');
+
+            $('#modalEditarTarea').modal('show');
+        <?php endif; ?>
+    <?php endif; ?>
 </script>
 
 <?php require_once __DIR__ . '/../layout/footer.php'; ?>

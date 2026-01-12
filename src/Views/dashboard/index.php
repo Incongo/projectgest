@@ -12,83 +12,111 @@
 
     <div class="ui divider"></div>
 
-
     <?php if ($proyectos->isEmpty()): ?>
         <div class="ui message">
             No participas en ningún proyecto.
         </div>
     <?php else: ?>
 
-        <div class="ui styled fluid accordion">
+        <?php
+        $proyectosActivos = $proyectos->where('estado_id', '!=', 3);
+        $proyectosFinalizados = $proyectos->where('estado_id', 3);
+        ?>
 
-            <?php foreach ($proyectos as $p): ?>
-                <div class="title">
-                    <i class="dropdown icon"></i>
-                    <?= htmlspecialchars($p->titulo) ?>
-                    <span class="ui label"><?= htmlspecialchars($p->estado->nombre) ?></span>
-                </div>
+        <!-- ============================================================
+             PROYECTOS ACTIVOS
+        ============================================================ -->
+        <h2 class="ui header">Proyectos activos</h2>
 
-                <div class="content">
+        <?php if ($proyectosActivos->isEmpty()): ?>
+            <div class="ui message">No tienes proyectos activos.</div>
+        <?php else: ?>
 
-                    <!-- DESCRIPCIÓN -->
-                    <?php if ($p->descripcion): ?>
-                        <p><?= nl2br(htmlspecialchars($p->descripcion)) ?></p>
-                    <?php endif; ?>
+            <div class="ui styled fluid accordion">
 
-                    <!-- BOTONES -->
-                    <a href="<?= BASE_URL ?>proyecto/ver/<?= $p->proyecto_id ?>" class="ui blue button small">
-                        Ver proyecto
-                    </a>
+                <?php foreach ($proyectosActivos as $p): ?>
 
-                    <?php if ($p->usuario_id === $usuarioId): ?>
-                        <a href="<?= BASE_URL ?>proyecto/editar/<?= $p->proyecto_id ?>" class="ui button small">
-                            Editar
+                    <?php
+                    $claseEstado = $p->estado_id == 1 ? 'estado-pendiente' : ($p->estado_id == 2 ? 'estado-progreso' : 'estado-finalizado');
+                    ?>
+
+                    <div class="title">
+                        <i class="dropdown icon"></i>
+                        <?= htmlspecialchars($p->titulo) ?>
+                        <span class="ui label <?= $claseEstado ?>">
+                            <?= htmlspecialchars($p->estado->nombre) ?>
+                        </span>
+                    </div>
+
+                    <div class="content">
+
+                        <!-- DESCRIPCIÓN -->
+                        <?php if ($p->descripcion): ?>
+                            <p><?= nl2br(htmlspecialchars($p->descripcion)) ?></p>
+                        <?php endif; ?>
+
+                        <!-- BOTONES -->
+                        <a href="<?= BASE_URL ?>proyecto/ver/<?= $p->proyecto_id ?>" class="ui blue button small">
+                            Ver proyecto
                         </a>
-                    <?php endif; ?>
 
-                    <div class="ui divider"></div>
+                        <?php if ($p->usuario_id === $usuarioId): ?>
+                            <a href="<?= BASE_URL ?>proyecto/editar/<?= $p->proyecto_id ?>" class="ui button small">
+                                Editar
+                            </a>
+                        <?php endif; ?>
 
-                    <!-- TAREAS EN CASCADA -->
-                    <h4 class="ui header">Tareas</h4>
+                        <div class="ui divider"></div>
 
-                    <?php if ($p->tareas->isEmpty()): ?>
-                        <div class="ui message">Este proyecto no tiene tareas.</div>
-                    <?php else: ?>
+                        <!-- TAREAS -->
+                        <h4 class="ui header">Tareas</h4>
 
-                        <div class="ui relaxed divided list">
+                        <?php if ($p->tareas->isEmpty()): ?>
+                            <div class="ui message">Este proyecto no tiene tareas.</div>
+                        <?php else: ?>
 
-                            <?php foreach ($p->tareas as $t): ?>
-                                <div class="item">
+                            <div class="ui relaxed divided list">
 
-                                    <i class="large tasks middle aligned icon"></i>
+                                <?php foreach ($p->tareas as $t): ?>
 
-                                    <div class="content">
+                                    <?php
+                                    $claseEstadoTarea = $t->estado_id == 1 ? 'estado-pendiente' : ($t->estado_id == 2 ? 'estado-progreso' : 'estado-finalizado');
+                                    ?>
 
-                                        <div class="header">
-                                            <?= htmlspecialchars($t->titulo) ?>
-                                            <span class="ui mini label"><?= htmlspecialchars($t->estado->nombre) ?></span>
-                                        </div>
+                                    <div class="item">
 
-                                        <div class="description">
-                                            <?= nl2br(htmlspecialchars($t->descripcion)) ?>
-                                        </div>
+                                        <i class="large tasks middle aligned icon"></i>
 
-                                        <div class="ui small horizontal list" style="margin-top:0.5rem;">
-                                            <div class="item">
-                                                <strong>Asignada a:</strong>
-                                                <?= htmlspecialchars($t->asignado->nombre) ?>
+                                        <div class="content">
+
+                                            <div class="header">
+                                                <?= htmlspecialchars($t->titulo) ?>
+                                                <span class="ui mini label <?= $claseEstadoTarea ?>">
+                                                    <?= htmlspecialchars($t->estado->nombre) ?>
+                                                </span>
                                             </div>
-                                        </div>
 
-                                        <div style="margin-top:0.5rem;">
-                                            <a href="<?= BASE_URL ?>tarea/ver/<?= $t->tarea_id ?>" class="ui blue button tiny">
-                                                Ver
-                                            </a>
+                                            <div class="description">
+                                                <?= nl2br(htmlspecialchars($t->descripcion)) ?>
+                                            </div>
 
-                                            <?php if ($p->usuario_id === $usuarioId): ?>
-                                                <a href="<?= BASE_URL ?>tarea/editar/<?= $t->tarea_id ?>"
-                                                    class="ui button tiny">
-                                                    Editar
+                                            <div class="ui small horizontal list" style="margin-top:0.5rem;">
+                                                <div class="item">
+                                                    <strong>Asignada a:</strong>
+                                                    <?= htmlspecialchars($t->asignado->nombre ?? 'Sin asignar') ?>
+                                                </div>
+                                            </div>
+
+                                            <div style="margin-top:0.5rem;">
+                                                <a href="<?= BASE_URL ?>tarea/ver/<?= $t->tarea_id ?>" class="ui blue button tiny">
+                                                    Ver
+                                                </a>
+
+                                                <?php if ($p->usuario_id === $usuarioId): ?>
+                                                    <a href="<?= BASE_URL ?>proyecto/ver/<?= $p->proyecto_id ?>?editar=<?= $t->tarea_id ?>"
+                                                        class="ui button tiny">
+                                                        Editar
+                                                    </a>
 
                                                     <a href="<?= BASE_URL ?>proyecto/borrarTarea/<?= $t->tarea_id ?>"
                                                         class="ui red button tiny"
@@ -97,21 +125,121 @@
                                                     </a>
                                                 <?php endif; ?>
 
+                                            </div>
+
                                         </div>
 
                                     </div>
 
-                                </div>
-                            <?php endforeach; ?>
+                                <?php endforeach; ?>
 
-                        </div>
+                            </div>
 
-                    <?php endif; ?>
+                        <?php endif; ?>
 
-                </div>
-            <?php endforeach; ?>
+                    </div>
 
-        </div>
+                <?php endforeach; ?>
+
+            </div>
+
+        <?php endif; ?>
+
+        <!-- ============================================================
+             PROYECTOS FINALIZADOS
+        ============================================================ -->
+        <h2 class="ui header" style="margin-top:3rem;">Proyectos finalizados</h2>
+
+        <?php if ($proyectosFinalizados->isEmpty()): ?>
+            <div class="ui message">No tienes proyectos finalizados.</div>
+        <?php else: ?>
+
+            <div class="ui styled fluid accordion">
+
+                <?php foreach ($proyectosFinalizados as $p): ?>
+
+                    <div class="title">
+                        <i class="dropdown icon"></i>
+                        <?= htmlspecialchars($p->titulo) ?>
+                        <span class="ui label estado-finalizado">Finalizado</span>
+                    </div>
+
+                    <div class="content">
+
+                        <!-- DESCRIPCIÓN -->
+                        <?php if ($p->descripcion): ?>
+                            <p><?= nl2br(htmlspecialchars($p->descripcion)) ?></p>
+                        <?php endif; ?>
+
+                        <!-- BOTONES -->
+                        <a href="<?= BASE_URL ?>proyecto/ver/<?= $p->proyecto_id ?>" class="ui blue button small">
+                            Ver proyecto
+                        </a>
+
+                        <div class="ui divider"></div>
+
+                        <!-- TAREAS -->
+                        <h4 class="ui header">Tareas</h4>
+
+                        <?php if ($p->tareas->isEmpty()): ?>
+                            <div class="ui message">Este proyecto no tiene tareas.</div>
+                        <?php else: ?>
+
+                            <div class="ui relaxed divided list">
+
+                                <?php foreach ($p->tareas as $t): ?>
+
+                                    <?php
+                                    $claseEstadoTarea = $t->estado_id == 1 ? 'estado-pendiente' : ($t->estado_id == 2 ? 'estado-progreso' : 'estado-finalizado');
+                                    ?>
+
+                                    <div class="item">
+
+                                        <i class="large tasks middle aligned icon"></i>
+
+                                        <div class="content">
+
+                                            <div class="header">
+                                                <?= htmlspecialchars($t->titulo) ?>
+                                                <span class="ui mini label <?= $claseEstadoTarea ?>">
+                                                    <?= htmlspecialchars($t->estado->nombre) ?>
+                                                </span>
+                                            </div>
+
+                                            <div class="description">
+                                                <?= nl2br(htmlspecialchars($t->descripcion)) ?>
+                                            </div>
+
+                                            <div class="ui small horizontal list" style="margin-top:0.5rem;">
+                                                <div class="item">
+                                                    <strong>Asignada a:</strong>
+                                                    <?= htmlspecialchars($t->asignado->nombre ?? 'Sin asignar') ?>
+                                                </div>
+                                            </div>
+
+                                            <div style="margin-top:0.5rem;">
+                                                <a href="<?= BASE_URL ?>tarea/ver/<?= $t->tarea_id ?>" class="ui blue button tiny">
+                                                    Ver
+                                                </a>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                <?php endforeach; ?>
+
+                            </div>
+
+                        <?php endif; ?>
+
+                    </div>
+
+                <?php endforeach; ?>
+
+            </div>
+
+        <?php endif; ?>
 
     <?php endif; ?>
 
