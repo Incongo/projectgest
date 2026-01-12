@@ -30,9 +30,16 @@
     <!-- NAVBAR Semantic UI -->
     <div class="ui inverted menu">
         <div class="ui container">
-            <a href="<?= BASE_URL ?>" class="header item">
-                ProjectGest
-            </a>
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <a href="<?= BASE_URL ?>dashboard" class="header item">
+                    ProjectGest
+                </a>
+            <?php else: ?>
+                <a href="<?= BASE_URL ?>" class="header item">
+                    ProjectGest
+                </a>
+            <?php endif; ?>
+
 
             <?php if (isset($_SESSION['user_id'])): ?>
                 <a href="<?= BASE_URL ?>dashboard" class="item">Inicio</a>

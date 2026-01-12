@@ -42,7 +42,8 @@ class ProyectoController extends Controller
             return;
         }
 
-        Proyecto::create([
+        // Creamos el proyecto y lo guardamos en una variable
+        $proyecto = Proyecto::create([
             'titulo' => $_POST['titulo'],
             'descripcion' => $_POST['descripcion'] ?? null,
             'fecha_inicio' => $_POST['fecha_inicio'] ?? null,
@@ -51,8 +52,10 @@ class ProyectoController extends Controller
             'estado_id' => 1
         ]);
 
-        $this->redirect(BASE_URL . 'proyecto');
+        // Redirigimos al ver del proyecto recién creado
+        $this->redirect(BASE_URL . 'proyecto/ver/' . $proyecto->proyecto_id);
     }
+
 
     public function editar(int $id): void
     {
@@ -128,6 +131,25 @@ class ProyectoController extends Controller
             'esCreador' => $esCreador
         ]);
     }
+    public function cambiarEstado(int $id): void
+    {
+        $proyecto = Proyecto::find($id);
+
+        if (!$proyecto) {
+            die('Proyecto no encontrado');
+        }
+
+        if ($proyecto->usuario_id !== $_SESSION['user_id']) {
+            die('No tienes permiso para cambiar el estado de este proyecto');
+        }
+
+        $proyecto->update([
+            'estado_id' => $_POST['estado_id']
+        ]);
+
+        $this->redirect(BASE_URL . 'proyecto/ver/' . $id);
+    }
+
 
     /* ============================================================
        ===============  GESTIÓN DE TAREAS (MODALES) ===============

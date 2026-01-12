@@ -39,7 +39,7 @@
         </div>
 
         <button class="ui green button">Crear proyecto</button>
-        <a href="<?= BASE_URL ?>proyecto" class="ui button">Cancelar</a>
+        <a href="<?= BASE_URL ?>dashboard" class="ui button">Cancelar</a>
 
     </form>
 

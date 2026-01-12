@@ -5,6 +5,14 @@
     <h1 class="ui header">Panel general</h1>
     <p class="ui small text">Aquí ves todos los proyectos en los que participas.</p>
 
+    <a href="<?= BASE_URL ?>proyecto/nuevo" class="ui primary button">
+        <i class="plus icon"></i>
+        Crear nuevo proyecto
+    </a>
+
+    <div class="ui divider"></div>
+
+
     <?php if ($proyectos->isEmpty()): ?>
         <div class="ui message">
             No participas en ningún proyecto.
@@ -78,20 +86,17 @@
                                             </a>
 
                                             <?php if ($p->usuario_id === $usuarioId): ?>
-                                                <button class="ui button tiny" onclick="editarTarea(<?= $t->tarea_id ?>, '<?= htmlspecialchars($t->titulo) ?>', '<?= htmlspecialchars($t->descripcion) ?>', <?= $t->usuario_id ?>)">
+                                                <a href="<?= BASE_URL ?>tarea/editar/<?= $t->tarea_id ?>"
+                                                    class="ui button tiny">
                                                     Editar
-                                                </button>
 
-                                                <a href="<?= BASE_URL ?>proyecto/borrarTarea/<?= $t->tarea_id ?>"
-                                                    class="ui red button tiny"
-                                                    onclick="return confirm('¿Seguro que deseas borrar esta tarea?')">
-                                                    Borrar
-                                                </a>
-                                            <?php endif; ?>
+                                                    <a href="<?= BASE_URL ?>proyecto/borrarTarea/<?= $t->tarea_id ?>"
+                                                        class="ui red button tiny"
+                                                        onclick="return confirm('¿Seguro que deseas borrar esta tarea?')">
+                                                        Borrar
+                                                    </a>
+                                                <?php endif; ?>
 
-                                            <button class="ui teal button tiny" onclick="cambiarEstado(<?= $t->tarea_id ?>)">
-                                                Estado
-                                            </button>
                                         </div>
 
                                     </div>

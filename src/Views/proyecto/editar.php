@@ -35,7 +35,7 @@
         </div>
 
         <button class="ui green button">Guardar cambios</button>
-        <a href="<?= BASE_URL ?>proyecto" class="ui button">Cancelar</a>
+        <a href="<?= BASE_URL ?>dashboard" class="ui button">Cancelar</a>
 
     </form>
 
